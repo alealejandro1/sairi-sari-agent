@@ -12,9 +12,11 @@ from dataclasses import dataclass
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from html import escape
 
 from business_state import BusinessStateStore
 from ledger_ocr import extract_text_from_image, format_ledger_draft, parse_ledger_ocr_text
+from telegram.constants import ParseMode
 
 from dotenv import load_dotenv
 
@@ -29,6 +31,10 @@ logger = logging.getLogger(__name__)
 
 def _conversation_log_path() -> str:
     return os.getenv("TELEGRAM_CONVERSATION_LOG", "logs/telegram_conversations.jsonl").strip()
+
+
+def _ledger_ocr_log_path() -> str:
+    return os.getenv("LEDGER_OCR_LOG", "logs/ledger_ocr.jsonl").strip()
 
 
 def _business_state_store_path() -> str:
@@ -47,6 +53,19 @@ def _append_conversation_log(record: Dict[str, object]) -> None:
         logger.warning("Conversation log write failed: %s", exc)
 
 
+def _append_ledger_ocr_log(record: Dict[str, object]) -> None:
+    path = _ledger_ocr_log_path()
+    try:
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        record["ts_utc"] = datetime.now(timezone.utc).isoformat()
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception as exc:
+        logger.debug("Ledger OCR log write failed: %s", exc)
+
+
 def _safe_preview(text: str | None, *, limit: int = 1000) -> str:
     if text is None:
         return ""
@@ -54,6 +73,27 @@ def _safe_preview(text: str | None, *, limit: int = 1000) -> str:
     if len(compact) <= limit:
         return compact
     return compact[:limit] + "…"
+
+
+def _safe_json_preview(payload: Dict[str, object], *, limit: int = 4000) -> str:
+    rendered = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2)
+    if len(rendered) <= limit:
+        return rendered
+    return rendered[: limit - 3] + "..."
+
+
+def _ledger_photo_info(message: object) -> Dict[str, object]:
+    photo = getattr(message, "photo", []) or []
+    selected = photo[-1] if photo else None
+    if not selected:
+        return {}
+    return {
+        "telegram_file_id": str(getattr(selected, "file_id", "")),
+        "telegram_file_unique_id": str(getattr(selected, "file_unique_id", "")),
+        "telegram_file_size": getattr(selected, "file_size", None),
+        "telegram_width": getattr(selected, "width", None),
+        "telegram_height": getattr(selected, "height", None),
+    }
 
 
 def _record_inbound(update: "Update", source: str, payload: str | None) -> None:
@@ -901,7 +941,7 @@ async def start(update: "Update", _: "ContextTypes.DEFAULT_TYPE") -> None:
         "Use one of these insight moments whenever:\n"
         "• /insight_open, /insight_visit, /insight_supplier, /insight_midday,\n"
         "• /insight_close, /insight_due, /insight_week\n"
-        "Then I’ll build a draft and ask for confirm/edit/cancel.\n"
+        "Then I’ll build a draft and ask for confirm/cancel.\n"
         "If you accidentally started this, send /cancel.",
         source="start_ack",
         reply_markup=_command_keyboard(),
@@ -978,7 +1018,6 @@ def _build_confirm_markup(draft_id: str) -> "InlineKeyboardMarkup":
     return InlineKeyboardMarkup(
         [[
             InlineKeyboardButton("✅ Confirm", callback_data=f"confirm:{draft_id}"),
-            InlineKeyboardButton("📝 Edit", callback_data=f"edit:{draft_id}"),
             InlineKeyboardButton("❌ Cancel", callback_data=f"cancel:{draft_id}"),
         ]]
     )
@@ -1039,9 +1078,9 @@ def _build_ledger_payload(
 def _json_snippet(payload: Dict[str, object], *, max_chars: int = 3000) -> str:
     raw = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
     if len(raw) <= max_chars:
-        return f"```json\n{raw}\n```"
+        return raw
     head = raw[: max_chars - 12]
-    return f"```json\n{head}\n...\n```"
+    return f"{head}\n..."
 
 
 def _parse_loan_text(text: str) -> Optional[Dict[str, object]]:
@@ -1372,7 +1411,6 @@ async def on_text(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> Non
         reply_markup=InlineKeyboardMarkup(
             [[
                 InlineKeyboardButton("✅ Confirm", callback_data=f"confirm:{draft_id}"),
-                InlineKeyboardButton("📝 Edit", callback_data=f"edit:{draft_id}"),
                 InlineKeyboardButton("❌ Cancel", callback_data=f"cancel:{draft_id}"),
             ]]
         ),
@@ -1389,67 +1427,130 @@ async def on_photo(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> No
     if mode == "ledger":
         draft_id = f"ledger-{len(_get_drafts(context)) + 1:04d}"
         context.user_data["active_draft_id"] = draft_id
-        ocr_text = await _extract_ledger_text(update.effective_message)
-        if not ocr_text:
+        photo_info = _ledger_photo_info(update.effective_message)
+        _append_ledger_ocr_log(
+            {
+                "event": "ledger_photo_received",
+                "draft_id": draft_id,
+                "chat_id": update.effective_chat.id if update.effective_chat else None,
+                "user_id": (update.effective_user.id if update.effective_user else None),
+                "photo": photo_info,
+            }
+        )
+
+        try:
+            ocr_text, ocr_error = await _extract_ledger_text(update.effective_message)
+            _append_ledger_ocr_log(
+                {
+                    "event": "ledger_ocr_extract",
+                    "draft_id": draft_id,
+                    "chat_id": update.effective_chat.id if update.effective_chat else None,
+                    "user_id": (update.effective_user.id if update.effective_user else None),
+                    "text_length": len(ocr_text or ""),
+                }
+            )
+            if not ocr_text:
+                _append_ledger_ocr_log(
+                    {
+                        "event": "ledger_ocr_failed",
+                        "draft_id": draft_id,
+                        "chat_id": update.effective_chat.id if update.effective_chat else None,
+                        "user_id": (update.effective_user.id if update.effective_user else None),
+                        "reason": "no_ocr_text",
+                        "error": ocr_error,
+                        "raw_ocr_text": None,
+                    }
+                )
+                _get_drafts(context)[draft_id] = {
+                    "chat_id": str(update.effective_chat.id),
+                    "source": "ledger",
+                    "raw": "ledger_photo",
+                    "status": "pending_ocr",
+                    "ocr_mode": "ledger",
+                }
+                await _reply_with_log(
+                    update,
+                    f"📒 Draft #{draft_id} marked as ledger page.\n"
+                    "I couldn’t run OCR on this photo yet. Send a clearer picture if this repeats.",
+                    source="ledger_photo_received",
+                )
+                await _send_shortcuts(update)
+                return
+
+            parsed = parse_ledger_ocr_text(ocr_text)
+            payload_for_log = _build_ledger_payload(
+                draft_id,
+                customer_name=str(parsed.get("customer_name") or "Unknown"),
+                parsed=parsed,
+                ocr_text=ocr_text,
+                chat_id=update.effective_chat.id,
+            )
+            _append_ledger_ocr_log(
+                {
+                    "event": "ledger_ocr_parsed",
+                    "draft_id": draft_id,
+                    "chat_id": update.effective_chat.id if update.effective_chat else None,
+                    "user_id": (update.effective_user.id if update.effective_user else None),
+                    "rows": len(parsed.get("entries") or []),
+                    "warnings": list(parsed.get("warnings", [])),
+                    "raw_ocr_text": ocr_text,
+                    "payload_json": payload_for_log,
+                }
+            )
+            entries = list(parsed.get("entries", []))
+            customer_name = str(parsed.get("customer_name") or "Unknown")
             _get_drafts(context)[draft_id] = {
                 "chat_id": str(update.effective_chat.id),
                 "source": "ledger",
-                "raw": "ledger_photo",
-                "status": "pending_ocr",
+                "raw": ocr_text,
+                "status": "pending",
                 "ocr_mode": "ledger",
+                "customer_name": customer_name,
+                "parsed": parsed,
+                "lines": entries,
+                "payload_json": payload_for_log,
             }
             await _reply_with_log(
                 update,
-                f"📒 Draft #{draft_id} marked as ledger page.\n"
-                "I couldn’t run OCR on this photo yet. Send a clearer picture if this repeats.",
+                (
+                    "📄 Parsed ledger payload (JSON):\n"
+                    f"<pre>{escape(_json_snippet(payload_for_log))}</pre>\n"
+                    "If this looks correct, press Confirm. If not, send /cancel and submit a new photo."
+                ),
+                source="ledger_json_review",
+                parse_mode=ParseMode.HTML,
+            )
+            await _reply_with_log(
+                update,
+                format_ledger_draft(entries, draft_id=draft_id),
                 source="ledger_photo_received",
+                reply_markup=InlineKeyboardMarkup(
+                    [[
+                        InlineKeyboardButton("✅ Confirm", callback_data=f"confirm:{draft_id}"),
+                        InlineKeyboardButton("❌ Cancel", callback_data=f"cancel:{draft_id}"),
+                    ]]
+                ),
             )
             await _send_shortcuts(update)
-            return
-
-        parsed = parse_ledger_ocr_text(ocr_text)
-        entries = list(parsed.get("entries", []))
-        customer_name = str(parsed.get("customer_name") or "Unknown")
-        ledger_payload = _build_ledger_payload(
-            draft_id,
-            customer_name=customer_name,
-            parsed=parsed,
-            ocr_text=ocr_text,
-            chat_id=update.effective_chat.id,
-        )
-        _get_drafts(context)[draft_id] = {
-            "chat_id": str(update.effective_chat.id),
-            "source": "ledger",
-            "raw": ocr_text,
-            "status": "pending",
-            "ocr_mode": "ledger",
-            "customer_name": customer_name,
-            "parsed": parsed,
-            "lines": entries,
-            "payload_json": ledger_payload,
-        }
-        await _reply_with_log(
-            update,
-            (
-                "📄 Parsed ledger payload (JSON):\n"
-                f"{_json_snippet(ledger_payload)}\n"
-                "If this looks correct, press Confirm. If not, edit text or press Cancel."
-            ),
-            source="ledger_json_review",
-        )
-        await _reply_with_log(
-            update,
-            format_ledger_draft(entries, draft_id=draft_id),
-            source="ledger_photo_received",
-            reply_markup=InlineKeyboardMarkup(
-                [[
-                    InlineKeyboardButton("✅ Confirm", callback_data=f"confirm:{draft_id}"),
-                    InlineKeyboardButton("📝 Edit", callback_data=f"edit:{draft_id}"),
-                    InlineKeyboardButton("❌ Cancel", callback_data=f"cancel:{draft_id}"),
-                ]]
-            ),
-        )
-        await _send_shortcuts(update)
+        except Exception as exc:  # pragma: no cover - runtime guard
+            logger.exception("Ledger OCR workflow failed for %s", draft_id)
+            _append_ledger_ocr_log(
+                {
+                    "event": "ledger_ocr_handler_error",
+                    "draft_id": draft_id,
+                    "chat_id": update.effective_chat.id if update.effective_chat else None,
+                    "user_id": (update.effective_user.id if update.effective_user else None),
+                    "error": str(exc),
+                }
+            )
+            await _reply_with_log(
+                update,
+                "⚠️ I hit a parsing/network error while processing this ledger photo.\n"
+                "Please send the photo again or try a clearer image after /ledger.\n"
+                "If this persists, send /cancel and try again in a few seconds.",
+                source="ledger_photo_error",
+            )
+            await _send_shortcuts(update)
         return
 
     # Photo parsing is intentionally placeholder in MVP-lite.
@@ -1466,13 +1567,12 @@ async def on_photo(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> No
     await _reply_with_log(
         update,
         f"Draft #{draft_id} from photo: OCR/vision parsing will be added in the next step.\n"
-        "For now, please use this draft as a placeholder and edit by reply text.\n"
+        "For now, please use this draft as a placeholder and send a corrected message to create a new one.\n"
         "Is this what you meant?",
         source="photo_draft",
         reply_markup=InlineKeyboardMarkup(
             [[
                 InlineKeyboardButton("✅ Confirm", callback_data=f"confirm:{draft_id}"),
-                InlineKeyboardButton("📝 Edit", callback_data=f"edit:{draft_id}"),
                 InlineKeyboardButton("❌ Cancel", callback_data=f"cancel:{draft_id}"),
             ]]
         ),
@@ -1480,13 +1580,13 @@ async def on_photo(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> No
     await _send_shortcuts(update)
 
 
-async def _extract_ledger_text(message) -> Optional[str]:
+async def _extract_ledger_text(message) -> tuple[Optional[str], Optional[str]]:
     if message is None:
-        return None
+        return None, "missing_message"
 
     photo = message.photo[-1] if message.photo else None
     if not photo:
-        return None
+        return None, "missing_photo"
 
     temp_path: Optional[str] = None
     try:
@@ -1495,10 +1595,10 @@ async def _extract_ledger_text(message) -> Optional[str]:
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as handle:
             temp_path = handle.name
         await file_obj.download_to_drive(custom_path=temp_path)
-        return extract_text_from_image(temp_path)
+        return extract_text_from_image(temp_path), None
     except Exception as exc:
         logger.warning("Ledger OCR extraction failed: %s", exc)
-        return None
+        return None, str(exc)
     finally:
         if temp_path and os.path.exists(temp_path):
             try:
@@ -1645,6 +1745,18 @@ async def on_callback(update: "Update", context: "ContextTypes.DEFAULT_TYPE") ->
         draft["status"] = "confirmed"
         if draft.get("source") == "ledger":
             result = _persist_ledger_draft(context, draft_id, draft)
+            _append_ledger_ocr_log(
+                {
+                    "event": "ledger_draft_confirm",
+                    "draft_id": draft_id,
+                    "chat_id": update.effective_chat.id if update.effective_chat else None,
+                    "user_id": query.from_user.id if query and query.from_user else None,
+                    "status": result.get("status"),
+                    "entries_added": result.get("entries_added", 0),
+                    "entries_total": result.get("entries_total", 0),
+                    "payload_json": draft.get("payload_json"),
+                }
+            )
             if result["status"] == "saved":
                 msg = (
                     f"✅ Draft #{draft_id} confirmed and saved to ledger."
@@ -1717,20 +1829,32 @@ async def on_callback(update: "Update", context: "ContextTypes.DEFAULT_TYPE") ->
                 source="callback_confirm",
                 text=f"✅ Draft #{draft_id} confirmed.",
             )
-    elif action == "edit":
-        draft["status"] = "edit_requested"
-        await _edit_with_log(
-            update,
-            source="callback_edit",
-            text=f"✏️ Edit mode for #{draft_id}.\n"
-            "Send a corrected text message next. I’ll treat it as a replacement.",
-        )
     elif action == "cancel":
         draft["status"] = "cancelled"
+        if draft.get("source") == "ledger":
+            _append_ledger_ocr_log(
+                {
+                    "event": "ledger_draft_cancelled",
+                    "draft_id": draft_id,
+                    "chat_id": update.effective_chat.id if update.effective_chat else None,
+                    "user_id": query.from_user.id if query and query.from_user else None,
+                    "payload_json": draft.get("payload_json"),
+                    "reason": "user_cancelled",
+                }
+            )
         await _edit_with_log(
             update,
             source="callback_cancel",
             text=f"❌ Draft #{draft_id} cancelled.",
+        )
+    else:
+        await _edit_with_log(
+            update,
+            source="callback_unsupported_action",
+            text=(
+                "This action is not available anymore. "
+                "Use Confirm or Cancel for the current draft."
+            ),
         )
 
     if update.effective_chat and update.effective_message:
@@ -1775,7 +1899,7 @@ async def on_cancel(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> N
     drafts = _get_drafts(context)
     if draft_id and draft_id in drafts:
         draft_status = drafts[draft_id].get("status")
-        if draft_status in {"pending", "pending_ocr", "edit_requested"}:
+        if draft_status in {"pending", "pending_ocr"}:
             drafts[draft_id]["status"] = "cancelled"
             cancelled_items.append(draft_id)
 
@@ -1949,6 +2073,13 @@ async def on_error(update: "Update", context) -> None:
         getattr(update, "update_id", None),
         context.error,
     )
+    if update and getattr(update, "effective_chat", None):
+        try:
+            await update.effective_chat.send_message(
+                "⚠️ I hit an unexpected issue. Please type /start to reset and retry."
+            )
+        except Exception:
+            logger.debug("Failed to send error message to chat.", exc_info=True)
 
 
 def main() -> None:
