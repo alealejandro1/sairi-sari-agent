@@ -1,0 +1,15 @@
+LICENSE
+README.md
+pyproject.toml
+src/__init__.py
+src/main.py
+src/accounting/__init__.py
+src/api/__init__.py
+src/bot/__init__.py
+src/sairi_sari_agent.egg-info/PKG-INFO
+src/sairi_sari_agent.egg-info/SOURCES.txt
+src/sairi_sari_agent.egg-info/dependency_links.txt
+src/sairi_sari_agent.egg-info/requires.txt
+src/sairi_sari_agent.egg-info/top_level.txt
+tests/test_parser.py
+tests/test_smoke.py

@@ -1,0 +1,51 @@
+Metadata-Version: 2.4
+Name: sairi-sari-agent
+Version: 0.1.0
+Summary: Agentic Telegram digital twin for sari-sari store accounting
+Author: Your Name
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: python-telegram-bot>=20.6
+Requires-Dist: python-dotenv>=1.0
+Dynamic: license-file
+
+# sairi-sari-agent
+
+Telegram-first digital assistant for sari-sari shop operations.
+
+## Current scope (MVP-lite)
+This repository is currently focused on a strict minimum feature set:
+- Capture operations from Telegram text and photos.
+- Confirm parsed records before posting.
+- Track inventory updates from shelf photos.
+- Track supplier offers (agent vs wholesaler) and sale prices.
+- Generate a simple wholesaler trip-prep list.
+
+English-only for this version.
+
+## Why this scope
+The target users operate with pen-and-paper workflows and limited time. The MVP-lite is intentionally narrow to ship quickly and provide immediate value without spreadsheet behavior.
+
+## Key docs
+- `docs/product-requirements.md`: MVP-lite source of truth.
+- `docs/domain-model.md`: data boundaries and invariants.
+- `docs/thread-charter.md`: how to split work across Codex threads.
+- `docs/synthetic-data.md`: synthetic dataset schema and usage.
+
+## Synthetic data
+Generate deterministic test data:
+
+```bash
+python3 scripts/generate_synthetic_data.py
+```
+
+Generated files are written to `data/synthetic/`.
+
+## Development with Codex
+- Keep each thread focused on one track.
+- Map every implementation PR to a requirement in the PRD.
+- Prefer small, testable increments.
+
+## License
+MIT
