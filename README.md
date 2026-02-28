@@ -1,40 +1,69 @@
 # sairi-sari-agent
 
-Digital twin for a rural Philippine sari-sari store.
+Telegram-first digital assistant for sari-sari shop operations.
 
-## Vision
-`sairi-sari-agent` is an agentic assistant that communicates via Telegram and helps store owners who are not financially literate maintain day-to-day accounting records without spreadsheets.
+## Current scope (MVP-lite)
+This repository is currently focused on a strict minimum feature set:
+- Capture operations from Telegram text and photos.
+- Confirm parsed records before posting.
+- Track inventory updates from shelf photos.
+- Track supplier offers (agent vs wholesaler) and sale prices.
+- Generate a simple wholesaler trip-prep list.
 
-## Core goals
-- Capture sales, expenses, inventory, and utang (credit) through simple chat.
-- Convert conversational inputs into structured bookkeeping entries.
-- Provide plain-language daily/weekly financial summaries.
-- Enable a digital twin simulation for forecasting and recommendations.
+English-only for this version.
 
-## Planned architecture
-- `src/bot`: Telegram interface + command handlers.
-- `src/accounting`: Ledger and bookkeeping domain logic.
-- `src/api`: Internal API layer for integrations and dashboards.
-- `docs`: Product notes, domain glossary, and roadmap.
+## Why this scope
+The target users operate with pen-and-paper workflows and limited time. The MVP-lite is intentionally narrow to ship quickly and provide immediate value without spreadsheet behavior.
 
-## Quickstart
-1. Install Python 3.11+.
-2. Create a virtual environment.
-3. Install dependencies (to be added in `requirements.txt`).
-4. Copy `.env.example` to `.env` and configure values.
-5. Run the bot entrypoint (to be added in `src/main.py`).
+## Key docs
+- `docs/product-requirements.md`: MVP-lite source of truth.
+- `docs/domain-model.md`: data boundaries and invariants.
+- `docs/thread-charter.md`: how to split work across Codex threads.
+- `docs/synthetic-data.md`: synthetic dataset schema and usage.
 
-## Suggested first milestones
-1. Telegram message ingestion and auth.
-2. Natural-language transaction parser (Tagalog/English mix).
-3. Double-entry ledger model with simple reports.
-4. Weekly summary and anomaly alerts.
-5. Digital twin simulation for pricing and stock decisions.
+## Telegram bot buttons and features
+
+The bot exposes a persistent keyboard with these commands:
+
+- `/start`
+  - Starts/returns to normal intake mode.
+  - Accepts text like `item qty price` (example: `soap 2 15`) and also photos.
+  - Builds a draft for confirmation before posting.
+  - If started by mistake, use `/cancel`.
+- `/ledger`
+  - Marks the next uploaded photo as a ledger page.
+  - Replies with a ledger placeholder draft and marks it as OCR-ledger flow.
+  - If started by mistake, use `/cancel`.
+- `/cancel`
+  - Clears the active in-progress action (`next_photo_mode` or latest active draft).
+  - Use this anytime after accidental taps or wrong starts.
+- `/insights`
+  - Returns a quick summary of:
+    - tracked stock summary
+    - total sales count
+    - total sales value
+- `/debtors`
+  - Shows the list of people who owe money, including:
+    - person name
+    - amount owed
+    - since date
+- `/recent10`
+  - Shows the latest 10 confirmed transaction log entries.
+  - Useful for quick review of recent intake posts.
+
+## Synthetic data
+Generate deterministic test data:
+
+```bash
+python3 scripts/generate_synthetic_data.py
+```
+
+Generated files are written to `data/synthetic/`.
 
 ## Development with Codex
-- Ask Codex for single, testable increments (e.g., "Implement ledger posting with unit tests").
-- Ask Codex to explain tradeoffs before major architecture changes.
-- Keep prompts anchored to files and outcomes.
+- Keep each thread focused on one track.
+- Map every implementation PR to a requirement in the PRD.
+- Prefer small, testable increments.
 
 ## License
 MIT
