@@ -10,7 +10,7 @@ For your current scale, the smallest reliable option is a single JSON file:
 
 Store shape in this implementation:
 - `data/business_state.json` (configurable via `BUSINESS_STATE_STORE_PATH`)
-- Sections: `customers`, `inventory`, `cash`, `loans`, `offers`, `catalog`, `sales`, `insights`, `ingestion_log`
+- Sections: `customers`, `inventory`, `cash`, `loans`, `catalog`, `sales`, `insights`, `ingestion_log`
 
 ## JSON schema used by this repo (v1)
 
@@ -50,7 +50,6 @@ Store shape in this implementation:
     "latest_snapshot": null
   },
   "loans": {},
-  "offers": [],
   "catalog": {},
   "sales": [],
   "insights": [],

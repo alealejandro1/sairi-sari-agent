@@ -11,8 +11,41 @@ from datetime import datetime
 from typing import Dict, List, Optional, Sequence
 
 
-_DATE_RE = re.compile(r"^\s*(?:mar(?:ch)?|march)\s*([ivx\d]+)\s*(.*)$", re.IGNORECASE)
-_DATE_RE_ALT = re.compile(r"^\s*([ivx\d]{1,4})\s*[\.:\-\)]?\s*$", re.IGNORECASE)
+_MONTH_TO_NUMBER = {
+    "jan": 1,
+    "january": 1,
+    "feb": 2,
+    "february": 2,
+    "mar": 3,
+    "march": 3,
+    "apr": 4,
+    "april": 4,
+    "may": 5,
+    "jun": 6,
+    "june": 6,
+    "jul": 7,
+    "july": 7,
+    "aug": 8,
+    "august": 8,
+    "sep": 9,
+    "sept": 9,
+    "september": 9,
+    "oct": 10,
+    "october": 10,
+    "nov": 11,
+    "november": 11,
+    "dec": 12,
+    "december": 12,
+}
+_MONTH_RE = "(?:" + "|".join(sorted(_MONTH_TO_NUMBER.keys(), key=len, reverse=True)) + ")"
+_DATE_RE = re.compile(rf"^\s*({_MONTH_RE})\s*([ivx\d]+)\s*(.*)$", re.IGNORECASE)
+_DATE_RE_ALT = re.compile(r"^\s*([ivx\d]{1,4})\s*[\.\:\-\)]?\s*$", re.IGNORECASE)
+
+
+def _month_to_number(month_token: str) -> int | None:
+    token = (month_token or "").strip().lower()
+    token = token.replace(".", "")
+    return _MONTH_TO_NUMBER.get(token)
 _AMOUNT_WITH_PESO_RE = re.compile(
     r"\b(?:PHP|₱|P|Php|php)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)\b",
     re.IGNORECASE,
@@ -21,7 +54,11 @@ _PURE_AMOUNT_RE = re.compile(
     r"^\s*(?:P|₱|PHP|php)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*$",
     re.IGNORECASE,
 )
-_HEADER_RE = re.compile(r"^.*utang\s+ledger[\-:]\s*(.+?)\s*$", re.IGNORECASE)
+_HEADER_RE = re.compile(r"^.*utang\s+ledger\s*[-:]\s*(.+?)\s*$", re.IGNORECASE)
+_HEADER_NAME_STOP_RE = re.compile(
+    r"\b(?:brgy\.?|barangay|blk\.?|block|purok|sitio|zone|city|province|municipality|municipal|b(?:ul)?acan)\b",
+    re.IGNORECASE,
+)
 
 
 def _slugify(value: str, max_len: int = 80) -> str:
@@ -35,10 +72,23 @@ def _normalize_header(customer_line: str) -> str:
         return "Unknown"
 
     name = m.group(1).strip()
+    name = name.lstrip(":-").strip()
+    if not name:
+        return "Unknown"
+
+    # Remove parenthesized notes and comma-separated suffixes.
     if "(" in name:
         name = name.split("(", 1)[0].strip()
     if "," in name:
         name = name.split(",", 1)[0].strip()
+
+    # Heuristic fallback for OCR headers that miss a delimiter between
+    # customer name and address text.
+    stop_match = _HEADER_NAME_STOP_RE.split(name, maxsplit=1)
+    if len(stop_match) > 1:
+        name = stop_match[0].strip()
+
+    name = re.sub(r"\s+", " ", name).strip()
     return name or "Unknown"
 
 
@@ -113,11 +163,18 @@ def _roman_to_int(token: str) -> Optional[int]:
     return total
 
 
-def _parse_date_line(line: str) -> Optional[tuple[str, str, bool]]:
+def _parse_date_line(
+    line: str,
+    default_month: int | None = None,
+) -> Optional[tuple[str, str, bool]]:
     m = _DATE_RE.match(line.strip())
     if m:
-        day_token = m.group(1)
-        rest = (m.group(2) or "").strip()
+        month_token = m.group(1)
+        day_token = m.group(2)
+        rest = (m.group(3) or "").strip()
+        month = _month_to_number(month_token)
+        if month is None:
+            return None
         day, suffix, merged = _split_ocr_day_token(day_token)
         if day is None:
             return None
@@ -132,17 +189,19 @@ def _parse_date_line(line: str) -> Optional[tuple[str, str, bool]]:
             rest = rest[1:].strip()
         if day:
             year = datetime.utcnow().year
-            date_iso = f"{year}-03-{day:02d}"
+            date_iso = f"{year}-{month:02d}-{day:02d}"
             return date_iso, rest, merged
 
     m = _DATE_RE_ALT.match(line.strip())
     if not m:
         return None
+    if default_month is None:
+        return None
     year = datetime.utcnow().year
     day = _roman_to_int(m.group(1))
     if not day:
         return None
-    return f"{year}-03-{day:02d}", "", False
+    return f"{year}-{default_month:02d}-{day:02d}", "", False
 
 
 def _pick_row_amount_balance(
@@ -331,6 +390,7 @@ def parse_ledger_ocr_text(text: str, customer_name_hint: Optional[str] = None) -
     entries: List[LedgerParseLine] = []
     parse_warnings: List[str] = []
     previous_balance: Optional[float] = None
+    current_month: Optional[int] = None
     current: Optional[Dict[str, object]] = None
 
     def flush_current() -> None:
@@ -351,6 +411,19 @@ def parse_ledger_ocr_text(text: str, customer_name_hint: Optional[str] = None) -
 
         if len(amounts) == 0:
             # Keep ambiguous rows in the review draft instead of silently dropping them.
+            raw_lines = list(current.get("raw_lines", []))
+            if (
+                not note
+                and not payment_flag
+                and len(raw_lines) <= 1
+            ):
+                # Footer/scan boundaries can produce trailing date-only lines (e.g. date before TOTAL).
+                parse_warnings.append(
+                    f"Dropped date-only row on {date} because no readable amounts were found."
+                )
+                current = None
+                return
+
             warnings = [f"Row on {date} has note but no readable amounts."]
             if note:
                 warnings.append("Please verify manually; OCR could not parse amount.")
@@ -401,9 +474,11 @@ def parse_ledger_ocr_text(text: str, customer_name_hint: Optional[str] = None) -
             flush_current()
             break
 
-        parsed_date = _parse_date_line(line)
+        parsed_date = _parse_date_line(line, default_month=current_month)
         if parsed_date:
             date, trailing, merged_day_token = parsed_date
+            if date and "-" in date:
+                current_month = int(date.split("-")[1])
             if (
                 current is not None
                 and merged_day_token
@@ -472,6 +547,15 @@ def parse_ledger_ocr_text(text: str, customer_name_hint: Optional[str] = None) -
     if not entries:
         parse_warnings.append("No valid ledger rows parsed from OCR text.")
 
+    if not customer_name or customer_name == "Unknown":
+        # Entries without a detected customer name should never be recorded.
+        if entries:
+            parse_warnings.append(
+                f"Customer name not detected. Refusing to record {len(entries)} parsed row(s) for unknown customer."
+            )
+        entries = []
+        parse_warnings.append("Customer name not detected; cannot record this ledger until OCR clearly shows customer name.")
+
     warnings = list(dict.fromkeys(parse_warnings))
     return {
         "customer_name": customer_name or "Unknown",
@@ -480,14 +564,26 @@ def parse_ledger_ocr_text(text: str, customer_name_hint: Optional[str] = None) -
     }
 
 
-def format_ledger_draft(entries: Sequence[Dict[str, object]], *, draft_id: str) -> str:
+def format_ledger_draft(
+    entries: Sequence[Dict[str, object]],
+    *,
+    draft_id: str,
+    customer_name: str | None = None,
+) -> str:
     if not entries:
+        name = str(customer_name or "Unknown").strip() or "Unknown"
         return (
             f"📒 Draft #{draft_id} (ledger): I couldn’t parse any utang rows.\n"
+            f"Customer: {name}\n"
             "Try a clearer image or send the same photo again."
         )
 
-    body: List[str] = [f"=== Draft #{draft_id} (ledger) ===", "Utang Entries Preview"]
+    name = str(customer_name or "Unknown").strip() or "Unknown"
+    body: List[str] = [
+        f"=== Draft #{draft_id} (ledger) ===",
+        f"Customer: {name}",
+        "Utang Entries Preview",
+    ]
     for index, row in enumerate(entries, start=1):
         date = str(row.get("date", ""))
         kind = str(row.get("entry_kind", "credit_sale"))

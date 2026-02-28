@@ -5,12 +5,12 @@
   },
   "cash": {
     "latest_snapshot": {
-      "cash_amount": 1000.0,
-      "cash_snapshot_id": "cash-003-2794891ca5",
+      "cash_amount": 1200.0,
+      "cash_snapshot_id": "cash-003-7d130d9096",
       "note": "Manual cash check-in",
-      "snapshot_utc": "2026-02-28T07:01:18.768093Z",
-      "source": "telegram_command_cash",
-      "source_id": "cash-0003"
+      "snapshot_utc": "2026-02-28T09:34:16.665021Z",
+      "source": "telegram_text",
+      "source_id": null
     },
     "snapshots": [
       {
@@ -20,11 +20,208 @@
         "snapshot_utc": "2026-02-28T07:01:18.768093Z",
         "source": "telegram_command_cash",
         "source_id": "cash-0003"
+      },
+      {
+        "cash_amount": 1500.0,
+        "cash_snapshot_id": "cash-003-6ba5fafa06",
+        "note": "Manual cash check-in",
+        "snapshot_utc": "2026-02-28T08:50:28.467291Z",
+        "source": "telegram_text",
+        "source_id": null
+      },
+      {
+        "cash_amount": 2000.0,
+        "cash_snapshot_id": "cash-003-22bb672b7c",
+        "note": "Manual cash check-in",
+        "snapshot_utc": "2026-02-28T09:06:22.691271Z",
+        "source": "telegram_text",
+        "source_id": null
+      },
+      {
+        "cash_amount": 15000.0,
+        "cash_snapshot_id": "cash-003-3863c46b30",
+        "note": "Manual cash check-in",
+        "snapshot_utc": "2026-02-28T09:12:52.405347Z",
+        "source": "telegram_text",
+        "source_id": null
+      },
+      {
+        "cash_amount": 1500.0,
+        "cash_snapshot_id": "cash-003-d8c011ad7a",
+        "note": "Manual cash check-in",
+        "snapshot_utc": "2026-02-28T09:13:01.152857Z",
+        "source": "telegram_text",
+        "source_id": null
+      },
+      {
+        "cash_amount": 1200.0,
+        "cash_snapshot_id": "cash-003-7d130d9096",
+        "note": "Manual cash check-in",
+        "snapshot_utc": "2026-02-28T09:34:16.665021Z",
+        "source": "telegram_text",
+        "source_id": null
       }
     ]
   },
   "catalog": {},
   "customers": {
+    "aling_cora": {
+      "current_balance": 439.9,
+      "customer_key": "aling_cora",
+      "customer_name": "Aling Cora",
+      "entries": [
+        {
+          "amount": 165.85,
+          "confidence": 0.95,
+          "date": "2026-01-02",
+          "entry_id": "led-aling_cora-0-003-721e274e9d",
+          "entry_kind": "credit_sale",
+          "note": "1 Balao,4 KopiPawo",
+          "raw_lines": [
+            "6: Jan 2",
+            "7: 1 Balao,4 KopiPawo",
+            "8: P165.85",
+            "9: P165.85"
+          ],
+          "running_balance": 165.85,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": 271.4,
+          "confidence": 0.95,
+          "date": "2026-01-11",
+          "entry_id": "led-aling_cora-1-003-f0ec237812",
+          "entry_kind": "credit_sale",
+          "note": "2 Marbobo box 20s),3 Hydro water",
+          "raw_lines": [
+            "10: Jan 11",
+            "11: 2 Marbobo box 20s),3 Hydro water",
+            "12: P271.40",
+            "13: 437.25"
+          ],
+          "running_balance": 437.25,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": -357.25,
+          "confidence": 0.7,
+          "date": "2026-01-20",
+          "entry_id": "led-aling_cora-2-003-27b0d0d443",
+          "entry_kind": "payment",
+          "note": "-80.00",
+          "raw_lines": [
+            "14: Jan 20",
+            "15: BAYAD",
+            "16: -80.00",
+            "17: 357.25"
+          ],
+          "running_balance": 80.0,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": 318.9,
+          "confidence": 0.95,
+          "date": "2026-01-24",
+          "entry_id": "led-aling_cora-3-003-61132d23db",
+          "entry_kind": "credit_sale",
+          "note": "4 SeasonBite,6 Cruncher",
+          "raw_lines": [
+            "18: Jan 24",
+            "19: 4 SeasonBite,6 Cruncher",
+            "20: P318.90",
+            "21: P676.15"
+          ],
+          "running_balance": 676.15,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": 246.2,
+          "confidence": 0.95,
+          "date": "2026-02-02",
+          "entry_id": "led-aling_cora-4-003-f8317ea87e",
+          "entry_kind": "credit_sale",
+          "note": "1 Luntuk beer,2 ChocoJoy,2 Wafer Crisp",
+          "raw_lines": [
+            "22: Feb 2",
+            "23: 1 Luntuk beer,2 ChocoJoy,2 Wafer Crisp",
+            "24: 246.20",
+            "25: P922.35"
+          ],
+          "running_balance": 922.35,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": -120.0,
+          "confidence": 0.75,
+          "date": "2026-02-15",
+          "entry_id": "led-aling_cora-5-003-08d63670a6",
+          "entry_kind": "payment",
+          "note": "",
+          "raw_lines": [
+            "26: Feb 15",
+            "27: BAYAD",
+            "28: 120.00",
+            "29: P802.35",
+            "30: P192.70",
+            "31: 995.05"
+          ],
+          "running_balance": 802.35,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": 214.8,
+          "confidence": 0.95,
+          "date": "2026-02-28",
+          "entry_id": "led-aling_cora-6-003-a78e83aef6",
+          "entry_kind": "credit_sale",
+          "note": "8 KopiPawa,1 Marbobo 3 Hydro water,2 Cruncher,1 Balao",
+          "raw_lines": [
+            "32: Feb 28",
+            "33: 8 KopiPawa,1 Marbobo",
+            "34: 3 Hydro water,2 Cruncher,1 Balao",
+            "35: 214.80",
+            "36: P1,209.85"
+          ],
+          "running_balance": 1209.85,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        },
+        {
+          "amount": -300.0,
+          "confidence": 0.95,
+          "date": "2026-03-05",
+          "entry_id": "led-aling_cora-7-003-c3994b1168",
+          "entry_kind": "payment",
+          "note": "",
+          "raw_lines": [
+            "37: Mar 5",
+            "38: BAYAD",
+            "39: 300.00",
+            "40: 909.85"
+          ],
+          "running_balance": 909.85,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0003",
+          "warnings": []
+        }
+      ],
+      "first_seen_utc": "2026-02-28T09:33:40.643602Z",
+      "is_irrecoverable": false,
+      "last_updated_utc": "2026-02-28T09:33:40.655558Z"
+    },
     "ate_nena": {
       "current_balance": 338.5,
       "customer_key": "ate_nena",
@@ -34,7 +231,7 @@
           "amount": 241.85,
           "confidence": 0.95,
           "date": "2026-03-03",
-          "entry_id": "led-ate_nena-0-001-fd4018f56f",
+          "entry_id": "led-ate_nena-0-001-5da2aea596",
           "entry_kind": "credit_sale",
           "note": "2 Marbobo box 20s),5 KopiPawa",
           "raw_lines": [
@@ -52,7 +249,7 @@
           "amount": 136.31,
           "confidence": 0.95,
           "date": "2026-03-05",
-          "entry_id": "led-ate_nena-1-001-88c7b5176a",
+          "entry_id": "led-ate_nena-1-001-1d00f2a7f6",
           "entry_kind": "credit_sale",
           "note": "6 Hydro water,I Bathy soap",
           "raw_lines": [
@@ -70,7 +267,7 @@
           "amount": -200.0,
           "confidence": 0.95,
           "date": "2026-03-07",
-          "entry_id": "led-ate_nena-2-001-a9d5ed73eb",
+          "entry_id": "led-ate_nena-2-001-48b99672af",
           "entry_kind": "payment",
           "note": "",
           "raw_lines": [
@@ -86,9 +283,9 @@
         },
         {
           "amount": 110.38,
-          "confidence": 0.7,
+          "confidence": 0.75,
           "date": "2026-03-09",
-          "entry_id": "led-ate_nena-3-001-5620d4b2ae",
+          "entry_id": "led-ate_nena-3-001-b5868fe25c",
           "entry_kind": "credit_sale",
           "note": "3 Cruncher,5 Wafer Crisp,4 ChocoJo",
           "raw_lines": [
@@ -99,7 +296,7 @@
             "22: 79.84",
             "23: 368.38"
           ],
-          "running_balance": 368.38,
+          "running_balance": 288.54,
           "source": "telegram_photo_ledger",
           "source_id": "ledger-0001",
           "warnings": []
@@ -108,7 +305,7 @@
           "amount": -150.0,
           "confidence": 0.95,
           "date": "2026-03-14",
-          "entry_id": "led-ate_nena-5-001-55630e22b0",
+          "entry_id": "led-ate_nena-5-001-50b39b6a1a",
           "entry_kind": "payment",
           "note": "",
           "raw_lines": [
@@ -126,7 +323,7 @@
           "amount": 199.96,
           "confidence": 0.95,
           "date": "2026-03-15",
-          "entry_id": "led-ate_nena-6-001-1b79e31ab0",
+          "entry_id": "led-ate_nena-6-001-1db6d32e23",
           "entry_kind": "credit_sale",
           "note": "3 Luntuk beer,I Balao I0s",
           "raw_lines": [
@@ -141,9 +338,163 @@
           "warnings": []
         }
       ],
-      "first_seen_utc": "2026-02-28T06:57:32.948352Z",
+      "first_seen_utc": "2026-02-28T09:32:48.050302Z",
       "is_irrecoverable": false,
-      "last_updated_utc": "2026-02-28T06:57:32.948859Z"
+      "last_updated_utc": "2026-02-28T09:32:48.051778Z"
+    },
+    "mang_dindo": {
+      "current_balance": 1248.4,
+      "customer_key": "mang_dindo",
+      "customer_name": "Mang Dindo",
+      "entries": [
+        {
+          "amount": 134.9,
+          "confidence": 0.95,
+          "date": "2026-01-05",
+          "entry_id": "led-mang_dindo-0-004-de29b947b4",
+          "entry_kind": "credit_sale",
+          "note": "4Cruncher,2 ChocoJoy",
+          "raw_lines": [
+            "6: Jan5",
+            "7: 4Cruncher,2 ChocoJoy",
+            "8: P134.90",
+            "9: P134.90"
+          ],
+          "running_balance": 134.9,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": 189.2,
+          "confidence": 0.95,
+          "date": "2026-01-21",
+          "entry_id": "led-mang_dindo-1-004-2df1a9e873",
+          "entry_kind": "credit_sale",
+          "note": "3 SeasonBite, 6 KopiPawa",
+          "raw_lines": [
+            "10: Jan 21",
+            "11: 3 SeasonBite, 6 KopiPawa",
+            "12: P189.20",
+            "13: P324.10"
+          ],
+          "running_balance": 324.1,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": -40.0,
+          "confidence": 0.75,
+          "date": "2026-01-28",
+          "entry_id": "led-mang_dindo-2-004-487e8bf1f0",
+          "entry_kind": "payment",
+          "note": "",
+          "raw_lines": [
+            "14: Jan 28",
+            "15: 40.00",
+            "16: P284.10",
+            "17: BAYAD-P40.00"
+          ],
+          "running_balance": 284.1,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": 268.4,
+          "confidence": 0.95,
+          "date": "2026-02-07",
+          "entry_id": "led-mang_dindo-3-004-700533fc63",
+          "entry_kind": "credit_sale",
+          "note": "1 Marbobo,2 Luntuk beer,3 Hydro wate",
+          "raw_lines": [
+            "18: Feb7",
+            "19: P268.40",
+            "20: P552.50",
+            "21: 1 Marbobo,2 Luntuk beer,3 Hydro wate"
+          ],
+          "running_balance": 552.5,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": -70.0,
+          "confidence": 0.75,
+          "date": "2026-02-20",
+          "entry_id": "led-mang_dindo-4-004-c80694258c",
+          "entry_kind": "payment",
+          "note": "",
+          "raw_lines": [
+            "22: Feb 20",
+            "23: P70.00",
+            "24: P482.50",
+            "25: BAYAD-P70.00"
+          ],
+          "running_balance": 482.5,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": 223.4,
+          "confidence": 0.95,
+          "date": "2026-03-03",
+          "entry_id": "led-mang_dindo-5-004-827a474705",
+          "entry_kind": "credit_sale",
+          "note": "5 ChocoJoy,4 Wafer Crisp",
+          "raw_lines": [
+            "26: Mar3",
+            "27: 5 ChocoJoy,4 Wafer Crisp",
+            "28: P223.40",
+            "29: P705.90"
+          ],
+          "running_balance": 705.9,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": 190.0,
+          "confidence": 0.95,
+          "date": "2026-03-10",
+          "entry_id": "led-mang_dindo-6-004-74e6b85ab0",
+          "entry_kind": "credit_sale",
+          "note": "2 Balao,4 KopiPawa",
+          "raw_lines": [
+            "30: Mar10",
+            "31: P190.00",
+            "32: P895.90",
+            "33: 2 Balao,4 KopiPawa"
+          ],
+          "running_balance": 895.9,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        },
+        {
+          "amount": 352.5,
+          "confidence": 0.95,
+          "date": "2026-03-24",
+          "entry_id": "led-mang_dindo-7-004-11c952c355",
+          "entry_kind": "credit_sale",
+          "note": "3 SeasonBite, 2 Marbobo,1 Hydro water",
+          "raw_lines": [
+            "34: Mar 24",
+            "35: 3 SeasonBite, 2 Marbobo,1 Hydro water",
+            "36: 352.50",
+            "37: P1,248.40"
+          ],
+          "running_balance": 1248.4,
+          "source": "telegram_photo_ledger",
+          "source_id": "ledger-0004",
+          "warnings": []
+        }
+      ],
+      "first_seen_utc": "2026-02-28T09:34:02.159068Z",
+      "is_irrecoverable": false,
+      "last_updated_utc": "2026-02-28T09:34:02.163672Z"
     },
     "rodel_fishpond": {
       "current_balance": 437.58,
@@ -154,7 +505,7 @@
           "amount": 199.96,
           "confidence": 0.95,
           "date": "2026-03-04",
-          "entry_id": "led-rodel_fishpond-0-002-b3ff11a511",
+          "entry_id": "led-rodel_fishpond-0-002-3a8c13cee5",
           "entry_kind": "credit_sale",
           "note": "Balao los),3 Luntuk beer",
           "raw_lines": [
@@ -165,14 +516,14 @@
           ],
           "running_balance": 199.96,
           "source": "telegram_photo_ledger",
-          "source_id": "ledger-0001",
+          "source_id": "ledger-0002",
           "warnings": []
         },
         {
           "amount": 112.77,
           "confidence": 0.95,
           "date": "2026-03-06",
-          "entry_id": "led-rodel_fishpond-1-002-7729b35adb",
+          "entry_id": "led-rodel_fishpond-1-002-9aa00b98f4",
           "entry_kind": "credit_sale",
           "note": "8 Dishy liquid,5 KopiPawa",
           "raw_lines": [
@@ -183,14 +534,14 @@
           ],
           "running_balance": 312.73,
           "source": "telegram_photo_ledger",
-          "source_id": "ledger-0001",
+          "source_id": "ledger-0002",
           "warnings": []
         },
         {
           "amount": 181.8,
           "confidence": 0.95,
           "date": "2026-03-08",
-          "entry_id": "led-rodel_fishpond-2-002-7a48f7f0aa",
+          "entry_id": "led-rodel_fishpond-2-002-7ec4887a8b",
           "entry_kind": "credit_sale",
           "note": "2Marbobo box 20s",
           "raw_lines": [
@@ -201,14 +552,14 @@
           ],
           "running_balance": 494.53,
           "source": "telegram_photo_ledger",
-          "source_id": "ledger-0001",
+          "source_id": "ledger-0002",
           "warnings": []
         },
         {
           "amount": -300.0,
           "confidence": 0.95,
           "date": "2026-03-10",
-          "entry_id": "led-rodel_fishpond-3-002-a399d6a359",
+          "entry_id": "led-rodel_fishpond-3-002-f8ed1f8262",
           "entry_kind": "payment",
           "note": "",
           "raw_lines": [
@@ -219,14 +570,14 @@
           ],
           "running_balance": 194.53,
           "source": "telegram_photo_ledger",
-          "source_id": "ledger-0001",
+          "source_id": "ledger-0002",
           "warnings": []
         },
         {
           "amount": 155.44,
           "confidence": 0.75,
           "date": "2026-03-12",
-          "entry_id": "led-rodel_fishpond-4-002-a36bb8911c",
+          "entry_id": "led-rodel_fishpond-4-002-4b5a554e1b",
           "entry_kind": "credit_sale",
           "note": "6 Hydro waterl0 Glow sachet",
           "raw_lines": [
@@ -239,14 +590,14 @@
           ],
           "running_balance": 349.97,
           "source": "telegram_photo_ledger",
-          "source_id": "ledger-0001",
+          "source_id": "ledger-0002",
           "warnings": []
         },
         {
           "amount": 87.61,
           "confidence": 0.95,
           "date": "2026-03-13",
-          "entry_id": "led-rodel_fishpond-5-002-8e302f0ac4",
+          "entry_id": "led-rodel_fishpond-5-002-8588128ef0",
           "entry_kind": "credit_sale",
           "note": "2 SeasonBite3 Cruncher 4 ChocoJoy5 Wafer Crisp",
           "raw_lines": [
@@ -259,27 +610,67 @@
           ],
           "running_balance": 493.59,
           "source": "telegram_photo_ledger",
-          "source_id": "ledger-0001",
+          "source_id": "ledger-0002",
           "warnings": []
         }
       ],
-      "first_seen_utc": "2026-02-28T07:31:59.757529Z",
+      "first_seen_utc": "2026-02-28T09:33:12.498654Z",
       "is_irrecoverable": false,
-      "last_updated_utc": "2026-02-28T07:31:59.759218Z"
+      "last_updated_utc": "2026-02-28T09:33:12.501924Z"
     }
   },
   "ingestion_log": [
     {
+      "amount": 1000.0,
+      "event_id": "ing-002-50244d677b",
+      "kind": "cash_snapshot",
+      "recorded_at": "2026-02-28T07:01:18.768631Z",
+      "source": "telegram_command_cash",
+      "source_id": "cash-0003"
+    },
+    {
+      "amount": 1500.0,
+      "event_id": "ing-006-a6c08ecf49",
+      "kind": "cash_snapshot",
+      "recorded_at": "2026-02-28T08:50:28.467630Z",
+      "source": "telegram_text",
+      "source_id": null
+    },
+    {
+      "amount": 2000.0,
+      "event_id": "ing-010-ad1e5d2f9f",
+      "kind": "cash_snapshot",
+      "recorded_at": "2026-02-28T09:06:22.691959Z",
+      "source": "telegram_text",
+      "source_id": null
+    },
+    {
+      "amount": 15000.0,
+      "event_id": "ing-011-7ca201cf7b",
+      "kind": "cash_snapshot",
+      "recorded_at": "2026-02-28T09:12:52.405904Z",
+      "source": "telegram_text",
+      "source_id": null
+    },
+    {
+      "amount": 1500.0,
+      "event_id": "ing-012-f18edfcf20",
+      "kind": "cash_snapshot",
+      "recorded_at": "2026-02-28T09:13:01.155434Z",
+      "source": "telegram_text",
+      "source_id": null
+    },
+    {
       "customer_key": "ate_nena",
       "entries_added": 6,
-      "event_id": "ing-001-ba3856cedb",
+      "event_id": "ing-006-03581b93e6",
       "kind": "ledger_posted",
       "payload_json": {
         "chat_id": 971761350,
         "customer_name": "Ate Nena",
         "draft_id": "ledger-0001",
         "raw_ocr_text": "UTANG LEDGER-Ate Nena (Blk 3, beside the barangay hall)\nDate\nItems\nAmount\nBalance\nMar 3\nP241.85\nP241.85\n2 Marbobo box 20s),5 KopiPawa\nMar 5\n6 Hydro water,I Bathy soap\nP136.31\n378.16\nMar 7\nBAYAD\nP200.00\nP178.16\nMar 9\nP110.38\nP288.54\n3 Cruncher,5 Wafer Crisp,4 ChocoJo\n79.84\n368.38\nMar I1.\n10 Glow sachet,2 SeasonBite\nMar 14BAYAD\n150.00\nP218.38\nMar 15\n3 Luntuk beer,I Balao I0s\nP199.96\n418.34\nTOTAL\nHg=230\nmath=2.5",
-        "received_at_utc": "2026-02-28T06:57:24.175164+00:00",
+        "received_at_utc": "2026-02-28T09:32:43.461253+00:00",
         "rows": [
           {
             "amount": 241.85,
@@ -328,7 +719,7 @@
           },
           {
             "amount": 110.38,
-            "confidence": 0.7,
+            "confidence": 0.75,
             "date": "2026-03-09",
             "entry_kind": "credit_sale",
             "note": "3 Cruncher,5 Wafer Crisp,4 ChocoJo",
@@ -340,7 +731,7 @@
               "22: 79.84",
               "23: 368.38"
             ],
-            "running_balance": 368.38,
+            "running_balance": 288.54,
             "warnings": []
           },
           {
@@ -348,10 +739,9 @@
             "confidence": 0.35,
             "date": "2026-03-11",
             "entry_kind": "credit_sale",
-            "note": ". 10 Glow sachet,2 SeasonBite",
+            "note": "10 Glow sachet,2 SeasonBite",
             "raw_lines": [
               "24: Mar I1.",
-              "24: [tail].",
               "25: 10 Glow sachet,2 SeasonBite"
             ],
             "running_balance": null,
@@ -395,29 +785,21 @@
         "source": "telegram_photo_ledger",
         "warnings": []
       },
-      "recorded_at": "2026-02-28T06:57:32.948922Z",
+      "recorded_at": "2026-02-28T09:32:48.052011Z",
       "source": "telegram_photo_ledger",
       "source_id": "ledger-0001"
     },
     {
-      "amount": 1000.0,
-      "event_id": "ing-002-50244d677b",
-      "kind": "cash_snapshot",
-      "recorded_at": "2026-02-28T07:01:18.768631Z",
-      "source": "telegram_command_cash",
-      "source_id": "cash-0003"
-    },
-    {
       "customer_key": "rodel_fishpond",
       "entries_added": 6,
-      "event_id": "ing-003-381ea096c6",
+      "event_id": "ing-007-f33d5ec72f",
       "kind": "ledger_posted",
       "payload_json": {
         "chat_id": 971761350,
         "customer_name": "Rodel fishpond",
-        "draft_id": "ledger-0001",
+        "draft_id": "ledger-0002",
         "raw_ocr_text": "UTANG LEDGER-Rodel fishpond,bayaw ni Mang Bert)\nDate\nItems\nAmount\nBalance\nMar4\nBalao los),3 Luntuk beer\nP199.96\nP199.96\nMar6\n8 Dishy liquid,5 KopiPawa\nP112.77\nP312.73\nMar8\n2Marbobo box 20s\nP181.80\nP494.53\nMar 10\nBAYAD\n300.00\n194.53\nMar 12\n.6 Hydro waterl0 Glow sachet\nP155.44\n349.97\nP56.01\n405.98\nMar 13.2 SeasonBite3 Cruncher\nMar 164 ChocoJoy5 Wafer Crisp\n87.61\n493.59\nTOTAL\n155\n9G=230\nmath=2.5",
-        "received_at_utc": "2026-02-28T07:31:50.310418+00:00",
+        "received_at_utc": "2026-02-28T09:33:05.568881+00:00",
         "rows": [
           {
             "amount": 199.96,
@@ -518,9 +900,304 @@
         "source": "telegram_photo_ledger",
         "warnings": []
       },
-      "recorded_at": "2026-02-28T07:31:59.759538Z",
+      "recorded_at": "2026-02-28T09:33:12.502526Z",
       "source": "telegram_photo_ledger",
-      "source_id": "ledger-0001"
+      "source_id": "ledger-0002"
+    },
+    {
+      "customer_key": "aling_cora",
+      "entries_added": 8,
+      "event_id": "ing-008-6a0d3421f7",
+      "kind": "ledger_posted",
+      "payload_json": {
+        "chat_id": 971761350,
+        "customer_name": "Aling Cora",
+        "draft_id": "ledger-0003",
+        "raw_ocr_text": "UTANG LEDGER -Aling Cora Brgy.San lsidroPurok 4BaliuagBulacan)\nDate\nItems\nAmount\nBalance\nJan 2\n1 Balao,4 KopiPawo\nP165.85\nP165.85\nJan 11\n2 Marbobo box 20s),3 Hydro water\nP271.40\n437.25\nJan 20\nBAYAD\n-80.00\n357.25\nJan 24\n4 SeasonBite,6 Cruncher\nP318.90\nP676.15\nFeb 2\n1 Luntuk beer,2 ChocoJoy,2 Wafer Crisp\n246.20\nP922.35\nFeb 15\nBAYAD\n120.00\nP802.35\nP192.70\n995.05\nFeb 28\n8 KopiPawa,1 Marbobo\n3 Hydro water,2 Cruncher,1 Balao\n214.80\nP1,209.85\nMar 5\nBAYAD\n300.00\n909.85\nMar 18\nTOTAL\n7.i",
+        "received_at_utc": "2026-02-28T09:33:37.453330+00:00",
+        "rows": [
+          {
+            "amount": 165.85,
+            "confidence": 0.95,
+            "date": "2026-01-02",
+            "entry_kind": "credit_sale",
+            "note": "1 Balao,4 KopiPawo",
+            "raw_lines": [
+              "6: Jan 2",
+              "7: 1 Balao,4 KopiPawo",
+              "8: P165.85",
+              "9: P165.85"
+            ],
+            "running_balance": 165.85,
+            "warnings": []
+          },
+          {
+            "amount": 271.4,
+            "confidence": 0.95,
+            "date": "2026-01-11",
+            "entry_kind": "credit_sale",
+            "note": "2 Marbobo box 20s),3 Hydro water",
+            "raw_lines": [
+              "10: Jan 11",
+              "11: 2 Marbobo box 20s),3 Hydro water",
+              "12: P271.40",
+              "13: 437.25"
+            ],
+            "running_balance": 437.25,
+            "warnings": []
+          },
+          {
+            "amount": -357.25,
+            "confidence": 0.7,
+            "date": "2026-01-20",
+            "entry_kind": "payment",
+            "note": "-80.00",
+            "raw_lines": [
+              "14: Jan 20",
+              "15: BAYAD",
+              "16: -80.00",
+              "17: 357.25"
+            ],
+            "running_balance": null,
+            "warnings": []
+          },
+          {
+            "amount": 318.9,
+            "confidence": 0.95,
+            "date": "2026-01-24",
+            "entry_kind": "credit_sale",
+            "note": "4 SeasonBite,6 Cruncher",
+            "raw_lines": [
+              "18: Jan 24",
+              "19: 4 SeasonBite,6 Cruncher",
+              "20: P318.90",
+              "21: P676.15"
+            ],
+            "running_balance": 676.15,
+            "warnings": []
+          },
+          {
+            "amount": 246.2,
+            "confidence": 0.95,
+            "date": "2026-02-02",
+            "entry_kind": "credit_sale",
+            "note": "1 Luntuk beer,2 ChocoJoy,2 Wafer Crisp",
+            "raw_lines": [
+              "22: Feb 2",
+              "23: 1 Luntuk beer,2 ChocoJoy,2 Wafer Crisp",
+              "24: 246.20",
+              "25: P922.35"
+            ],
+            "running_balance": 922.35,
+            "warnings": []
+          },
+          {
+            "amount": -120.0,
+            "confidence": 0.75,
+            "date": "2026-02-15",
+            "entry_kind": "payment",
+            "note": "",
+            "raw_lines": [
+              "26: Feb 15",
+              "27: BAYAD",
+              "28: 120.00",
+              "29: P802.35",
+              "30: P192.70",
+              "31: 995.05"
+            ],
+            "running_balance": 802.35,
+            "warnings": []
+          },
+          {
+            "amount": 214.8,
+            "confidence": 0.95,
+            "date": "2026-02-28",
+            "entry_kind": "credit_sale",
+            "note": "8 KopiPawa,1 Marbobo 3 Hydro water,2 Cruncher,1 Balao",
+            "raw_lines": [
+              "32: Feb 28",
+              "33: 8 KopiPawa,1 Marbobo",
+              "34: 3 Hydro water,2 Cruncher,1 Balao",
+              "35: 214.80",
+              "36: P1,209.85"
+            ],
+            "running_balance": 1209.85,
+            "warnings": []
+          },
+          {
+            "amount": -300.0,
+            "confidence": 0.95,
+            "date": "2026-03-05",
+            "entry_kind": "payment",
+            "note": "",
+            "raw_lines": [
+              "37: Mar 5",
+              "38: BAYAD",
+              "39: 300.00",
+              "40: 909.85"
+            ],
+            "running_balance": 909.85,
+            "warnings": []
+          }
+        ],
+        "schema": "sairi_ledger_draft_v1",
+        "source": "telegram_photo_ledger",
+        "warnings": [
+          "Dropped date-only row on 2026-03-18 because no readable amounts were found."
+        ]
+      },
+      "recorded_at": "2026-02-28T09:33:40.657999Z",
+      "source": "telegram_photo_ledger",
+      "source_id": "ledger-0003"
+    },
+    {
+      "customer_key": "mang_dindo",
+      "entries_added": 8,
+      "event_id": "ing-009-b07362805e",
+      "kind": "ledger_posted",
+      "payload_json": {
+        "chat_id": 971761350,
+        "customer_name": "Mang Dindo",
+        "draft_id": "ledger-0004",
+        "raw_ocr_text": "UTANG LEDGER-Mang Dindo Brgy.Mabini Sitio KalikasanSan Pedro Laguna\nDate\nItems\nAmount\nBalance\nJan5\n4Cruncher,2 ChocoJoy\nP134.90\nP134.90\nJan 21\n3 SeasonBite, 6 KopiPawa\nP189.20\nP324.10\nJan 28\n40.00\nP284.10\nBAYAD-P40.00\nFeb7\nP268.40\nP552.50\n1 Marbobo,2 Luntuk beer,3 Hydro wate\nFeb 20\nP70.00\nP482.50\nBAYAD-P70.00\nMar3\n5 ChocoJoy,4 Wafer Crisp\nP223.40\nP705.90\nMar10\nP190.00\nP895.90\n2 Balao,4 KopiPawa\nMar 24\n3 SeasonBite, 2 Marbobo,1 Hydro water\n352.50\nP1,248.40\nTOTAL\n2.5",
+        "received_at_utc": "2026-02-28T09:33:58.292962+00:00",
+        "rows": [
+          {
+            "amount": 134.9,
+            "confidence": 0.95,
+            "date": "2026-01-05",
+            "entry_kind": "credit_sale",
+            "note": "4Cruncher,2 ChocoJoy",
+            "raw_lines": [
+              "6: Jan5",
+              "7: 4Cruncher,2 ChocoJoy",
+              "8: P134.90",
+              "9: P134.90"
+            ],
+            "running_balance": 134.9,
+            "warnings": []
+          },
+          {
+            "amount": 189.2,
+            "confidence": 0.95,
+            "date": "2026-01-21",
+            "entry_kind": "credit_sale",
+            "note": "3 SeasonBite, 6 KopiPawa",
+            "raw_lines": [
+              "10: Jan 21",
+              "11: 3 SeasonBite, 6 KopiPawa",
+              "12: P189.20",
+              "13: P324.10"
+            ],
+            "running_balance": 324.1,
+            "warnings": []
+          },
+          {
+            "amount": -40.0,
+            "confidence": 0.75,
+            "date": "2026-01-28",
+            "entry_kind": "payment",
+            "note": "",
+            "raw_lines": [
+              "14: Jan 28",
+              "15: 40.00",
+              "16: P284.10",
+              "17: BAYAD-P40.00"
+            ],
+            "running_balance": 284.1,
+            "warnings": []
+          },
+          {
+            "amount": 268.4,
+            "confidence": 0.95,
+            "date": "2026-02-07",
+            "entry_kind": "credit_sale",
+            "note": "1 Marbobo,2 Luntuk beer,3 Hydro wate",
+            "raw_lines": [
+              "18: Feb7",
+              "19: P268.40",
+              "20: P552.50",
+              "21: 1 Marbobo,2 Luntuk beer,3 Hydro wate"
+            ],
+            "running_balance": 552.5,
+            "warnings": []
+          },
+          {
+            "amount": -70.0,
+            "confidence": 0.75,
+            "date": "2026-02-20",
+            "entry_kind": "payment",
+            "note": "",
+            "raw_lines": [
+              "22: Feb 20",
+              "23: P70.00",
+              "24: P482.50",
+              "25: BAYAD-P70.00"
+            ],
+            "running_balance": 482.5,
+            "warnings": []
+          },
+          {
+            "amount": 223.4,
+            "confidence": 0.95,
+            "date": "2026-03-03",
+            "entry_kind": "credit_sale",
+            "note": "5 ChocoJoy,4 Wafer Crisp",
+            "raw_lines": [
+              "26: Mar3",
+              "27: 5 ChocoJoy,4 Wafer Crisp",
+              "28: P223.40",
+              "29: P705.90"
+            ],
+            "running_balance": 705.9,
+            "warnings": []
+          },
+          {
+            "amount": 190.0,
+            "confidence": 0.95,
+            "date": "2026-03-10",
+            "entry_kind": "credit_sale",
+            "note": "2 Balao,4 KopiPawa",
+            "raw_lines": [
+              "30: Mar10",
+              "31: P190.00",
+              "32: P895.90",
+              "33: 2 Balao,4 KopiPawa"
+            ],
+            "running_balance": 895.9,
+            "warnings": []
+          },
+          {
+            "amount": 352.5,
+            "confidence": 0.95,
+            "date": "2026-03-24",
+            "entry_kind": "credit_sale",
+            "note": "3 SeasonBite, 2 Marbobo,1 Hydro water",
+            "raw_lines": [
+              "34: Mar 24",
+              "35: 3 SeasonBite, 2 Marbobo,1 Hydro water",
+              "36: 352.50",
+              "37: P1,248.40"
+            ],
+            "running_balance": 1248.4,
+            "warnings": []
+          }
+        ],
+        "schema": "sairi_ledger_draft_v1",
+        "source": "telegram_photo_ledger",
+        "warnings": []
+      },
+      "recorded_at": "2026-02-28T09:34:02.164047Z",
+      "source": "telegram_photo_ledger",
+      "source_id": "ledger-0004"
+    },
+    {
+      "amount": 1200.0,
+      "event_id": "ing-010-7cff993ff4",
+      "kind": "cash_snapshot",
+      "recorded_at": "2026-02-28T09:34:16.665666Z",
+      "source": "telegram_text",
+      "source_id": null
     }
   ],
   "insights": [],
@@ -528,6 +1205,6 @@
   "loans": {},
   "offers": [],
   "sales": [],
-  "updated_utc": "2026-02-28T07:31:59.759551Z",
+  "updated_utc": "2026-02-28T09:34:16.665672Z",
   "version": 1
 }

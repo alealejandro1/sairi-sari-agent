@@ -4,7 +4,7 @@
 Collect only what helps the weekly decisions. The shopkeeper should only type 2–3 simple things:
 - send ledger pages
 - send occasional cash snapshots
-- send occasional short text or photo events for restocks/loans/offers
+- send occasional short text or photo events for restocks/loans
 
 Everything else should be inferred, defaulted, or filled from existing rows.
 
@@ -95,26 +95,7 @@ Derived by system:
 - next payout risk
 - debt service burden.
 
-## 5) Supplier offers / price lists
-Core goal: compare restock options.
-
-Required to persist:
-- `supplier_name`
-- `supplier_type` (`agent` | `wholesaler`)
-- `sku_id` or `item_label`
-- `unit_price`
-- `effective_date`
-- optional `source` (`photo`, `text`)
-
-Minimal capture:
-- parse photos into draft + user confirm.
-- if OCR misses a few lines, allow quick manual correction.
-
-Derived by system:
-- effective best-known cost by SKU
-- margin warning input for sale decisions.
-
-## 6) Product catalog / SKU normalization
+## 5) Product catalog / SKU normalization
 Core goal: avoid broken matching from OCR noise.
 
 Required to persist:
@@ -182,7 +163,7 @@ Ask only:
 
 Keep everything in one lightweight store until scale grows:
 - `data/business_state.json`
-- grouped sections: `customers`, `inventory`, `cash`, `loans`, `offers`, `catalog`, `sales`, `insights`
+- grouped sections: `customers`, `inventory`, `cash`, `loans`, `catalog`, `sales`, `insights`
 - versioned document with append-only event arrays and computed latest states.
 
 ## Suggested implementation map (MVP-lite)
@@ -192,7 +173,7 @@ Minimum shopkeeper input paths:
 - Cash check-in: `/cash` + confirm.
 - Shop loans: `/loan` + confirm.
 - Inventory adjustments: `/stock` + confirm.
-- Supplier offers: to be added in next pass from offer OCR/text (`offers` section in store) + confirm.
+- Supplier-facing procurement is currently manual in this version.
 
 ## Fill-plan by feature (what to capture, what to infer)
 
@@ -213,12 +194,10 @@ To keep data entry lightweight, capture only these fields directly from the shop
 - Sales
   - capture: quick text lines `item qty price` or confirmed photos
   - infer: weekly gross total, top movers, average basket size
-- Supplier offers (future)
-  - capture: supplier name, SKU shorthand, unit price per item
-  - infer: cheapest supplier, restock recommendations
+- Supplier-facing tools (future)
 
 Missing but useful later:
-- Supplier offer ingestion and ranking logic.
+- Procurement ranking logic.
 - Loan payment entries (to track repayments against principal).
 - Stock cost basis per SKU for stronger margin.
 - Return/spoilage adjustments.

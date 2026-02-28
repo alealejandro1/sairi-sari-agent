@@ -13,7 +13,7 @@ The JSON file is the source of truth for all tests and fixtures. It contains:
 - `inventory` stock levels and movement events
 - `cash` snapshots
 - `loans` obligations
-- `offers` and supplier-side price suggestions
+- `catalog`, `sales`, and `insights`
 - `catalog`, `sales`, `insights`, and `ingestion_log`
 
 Its structure is documented in `docs/business-state-model.md`.

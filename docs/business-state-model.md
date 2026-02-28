@@ -13,7 +13,6 @@ Single-file data store used by the current lightweight MVP:
 - `inventory`: current stock by SKU with adjustment events
 - `cash`: manual cash snapshot history
 - `loans`: shop borrowings / payable obligations
-- `offers`: supplier offers captured later
 - `catalog`: canonical SKU hints and aliases
 - `sales`: confirmed cash sales and non-utang sales events
 - `insights`: cached computed summaries (optional)
@@ -70,12 +69,6 @@ Single-file data store used by the current lightweight MVP:
     - `/stock` -> confirm -> `adjust_inventory`
     - later: sales integration (not required in this MVP-lite)
 
-- `offers`
-  - Values:
-    - `offer_id`, `supplier_name`, `supplier_type`, `sku_id`, `sku_name`
-    - `unit_price`, `unit`, `effective_date`, `recorded_utc`, `source`, `source_id`
-  - Not yet wired to a Telegram command in this pass.
-
 - `catalog`
   - Keyed by SKU for SKU aliasing
   - Values:
@@ -107,7 +100,6 @@ All user data writes are blocked until a confirm callback:
 
 ## Missing in v1 (planned)
 - explicit loan repayment entries
-- supplier offer ingestion and supplier-level compare
 - returns/spoilage adjustments
 - cost-of-goods ledger (`unit_cost` per sale/stock change)
 - linked sales-to-utang split for mixed-payment single transactions

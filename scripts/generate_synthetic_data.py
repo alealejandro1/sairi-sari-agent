@@ -17,12 +17,6 @@ SEED = 20260228
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "data" / "synthetic" / "business_state.json"
 
 CUSTOMERS = ["Maria next door", "Ate Nena", "Kuya Lito", "Mang Tony", "Aling Liza"]
-SUPPLIERS = [
-    ("Rodel fishpond", "agent"),
-    ("North Valley Agent", "agent"),
-    ("City Wholesale Mart", "wholesaler"),
-    ("Barangay Distributor", "agent"),
-]
 SKU_TEMPLATES = [
     ("Marbobo", "pack", 75.00, 95.00),
     ("Balao", "pack", 42.00, 58.00),
@@ -168,20 +162,6 @@ def generate(seed: int = SEED, output: Path = DEFAULT_OUTPUT) -> Dict[str, objec
             next_due_date=(start_day + timedelta(days=rng.randint(8, 25))).isoformat(),
             source="synthetic_seed",
             source_id=f"seed-loan-{_slug(lender)}",
-        )
-
-    # supplier offers
-    for idx, (supplier_name, supplier_type) in enumerate(SUPPLIERS, start=1):
-        sku_name, unit, _, _ = SKU_TEMPLATES[idx % len(SKU_TEMPLATES)]
-        store.add_offer(
-            supplier_name=supplier_name,
-            sku_name=sku_name,
-            unit_price=_money(rng, 5.0, 12.0),
-            supplier_type=supplier_type,
-            unit=unit,
-            source="synthetic_seed",
-            source_id=f"seed-offer-{idx:03d}",
-            effective_date=(start_day + timedelta(days=idx)).isoformat(),
         )
 
     # sales

@@ -2,15 +2,14 @@
 
 Telegram-first digital assistant for sari-sari shop operations.
 
-## Current scope (MVP-lite)
-This repository is currently focused on a strict minimum feature set:
-- Capture operations from Telegram text and photos.
-- Confirm parsed records before posting.
-- Track inventory updates from shelf photos.
-- Track supplier offers (agent vs wholesaler) and sale prices.
-- Generate a simple wholesaler trip-prep list.
-- Capture one Utang Ledger per household (not a full transaction ledger).
-- Keep a single JSON business state file for customers, cash, loans, inventory, offers, and sales.
+## Current scope (Utang-focused MVP)
+This repository is now focused on Utang ledger extraction and reporting:
+- Capture household ledger pages from Telegram photos (`/ledger`).
+- Review parsed rows and confirm before saving.
+- Produce two Utang reports:
+  - `/insights` for quick risk and concentration snapshot.
+  - `/debtors` for person-level outstanding, consumed, and payment staleness.
+- Keep a single JSON business state file.
 
 English-only for this version.
 
@@ -27,6 +26,7 @@ The target users operate with pen-and-paper workflows and limited time. The MVP-
 - `docs/feature-data-requirements.md`: what we need to store for lightweight but complete insights.
 - `docs/ledger-image-ingest-flow.md`: exact confirm-first runtime flow for utang ledger photos.
 - `docs/deployment-requirements.md`: local and cloud hardware requirements for MVP-lite.
+- `docs/telegram-board-dev.md`: Telegram board run and reload instructions.
 
 Current default persistence is a single file:
 - `data/business_state.json` via `BUSINESS_STATE_STORE_PATH`.
@@ -39,20 +39,8 @@ If you still need the old dedicated utang file during transition:
 The bot exposes a persistent keyboard "board" with these commands:
 
 - `/start`
-  - Starts/returns to normal intake mode.
-  - Accepts text like `item qty price` (example: `soap 2 15`) and also photos.
-  - Builds a draft for confirmation before posting.
+  - Shows the active Utang workflow and available commands.
   - If started by mistake, use `/cancel`.
-- `/cash <amount>`
-  - Record shop cash on hand snapshot as a confirmed draft.
-  - Example: `/cash 1450`.
-- `/loan <lender> <amount>`
-  - Record shop borrowings with confirmation before write.
-  - Example: `/loan "Ate Nena" 1500 3 2026-03-28`.
-- `/stock <item> <qty_delta>`
-  - Record manual stock adjustment with confirmation before write.
-  - Positive qty for add, negative for remove.
-  - Example: `/stock margarine 20`.
 - `/ledger`
   - Marks the next uploaded photo as a household ledger page.
   - Supports the Utang Ledger format (date, shorthand notes, amount, running balance).
@@ -62,33 +50,47 @@ The bot exposes a persistent keyboard "board" with these commands:
   - Clears the active in-progress action (`next_photo_mode` or latest active draft).
   - Use this anytime after accidental taps or wrong starts.
 - `/insights`
-  - Returns an easy-to-read business snapshot.
-  - Answers “Did I make money this week?”
-  - Shows cash movement, ledger exposure, and sales/stock health direction.
-- `/insight_open`
-  - Opening / start-of-day health card for liquidity and readiness.
-- `/insight_midday`
-  - Midday stock pressure and pacing card.
-- `/insight_visit`
-  - Pre-wholesaler visit prep card.
-- `/insight_supplier`
-  - Supplier-offer response card.
-- `/insight_close`
-  - End-of-day close and collections follow-up card.
-- `/insight_due`
-  - Loan repayment pressure card.
-- `/insight_week`
-  - Weekly trend card.
+  - Returns a fast Utang risk summary (open balances, concentration, and watchlist).
 - `/debtors`
   - Shows the list of people who owe money, including:
     - person name
     - amount owed
     - since date
-- `/recent10`
-  - Shows the latest 10 confirmed log entries (sales + utang ledger updates).
-  - Useful for quick review of recent intake posts.
 
-The keyboard is the primary control board for insights: these moment checks are pinned as board buttons so operators can trigger them anytime, regardless of day period.
+The keyboard is the primary control board for Utang-only flow and reports.
+
+## Telegram board
+
+Ledger photo OCR remains on the existing PaddleOCR path in `ledger_ocr.py`.
+
+### One-time run
+
+```bash
+python3 -m pip install python-telegram-bot python-dotenv
+# Install PaddleOCR if you run on systems that support it.
+python3 -m pip install paddleocr
+cp .env.example .env
+python3 src/main.py bot
+```
+
+Use `/start` in Telegram to open the board keyboard.
+
+### Live-reload while editing
+
+- Use `scripts/run_telegram_board.py` to auto-restart on source changes in `src/` and `scripts/`.
+- The launcher watches Python file mtimes and restarts the bot whenever code changes.
+
+```bash
+python3 scripts/run_telegram_board.py
+```
+
+Keep this running in its own terminal while you make edits.
+
+If you encounter certificate errors from your environment (`self-signed certificate in certificate chain`), run:
+
+```bash
+TELEGRAM_INSECURE_TLS=1 python3 scripts/run_telegram_board.py
+```
 
 ## Synthetic data
 Generate deterministic test data:

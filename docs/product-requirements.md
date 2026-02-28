@@ -13,7 +13,7 @@ Ship the smallest useful Telegram assistant that helps a sari-sari shop digitize
 - Owner cash check-ins are treated as authoritative where available.
 
 ## Core problem to solve
-Shopkeepers record operations on paper and in memory. Credit, sales, and cash still live in separate books, so the shopkeeper cannot answer simple business questions such as “Did I make money this week?”. Visibility into stock, supplier prices, and profit drivers stays fragmented.
+Shopkeepers record operations on paper and in memory. Credit, sales, and cash still live in separate books, so the shopkeeper cannot answer simple business questions such as “Did I make money this week?”. Visibility into stock and profit drivers stays fragmented.
 
 ## MVP-lite feature set (must-have)
 
@@ -21,7 +21,6 @@ Shopkeepers record operations on paper and in memory. Credit, sales, and cash st
 - Input types: Telegram text and Telegram photo.
 - Supported photo intents:
   - Notebook page photo for operations ingestion.
-  - Supplier offer photo (price list, handwritten offer, flyer).
 - System must reply with a confirmation prompt before posting:
   - "Is this what you meant?"
   - list of interpreted items + quantities + prices.
@@ -36,10 +35,10 @@ Shopkeepers record operations on paper and in memory. Credit, sales, and cash st
 - Keep event history of every stock change.
 
 ### M3: Price book and consistency tracking
-- Store supplier purchase prices by SKU and supplier.
-- Store selling prices by SKU from logged sales.
+- Store and track recent purchase estimates by SKU.
+- Store and track recent selling prices by SKU from logged sales.
 - Surface two simple checks:
-  - margin warning when sale price <= latest purchase price.
+  - margin warning when sale price <= recent purchase estimate.
   - consistency warning when sale price deviates from usual range.
 
 ### M4: Sales record capture
@@ -78,8 +77,8 @@ Shopkeepers record operations on paper and in memory. Credit, sales, and cash st
 - Provide insight cards that can be run at specific moments of the operator day:
   - opening / start-of-day
   - midday check
-  - pre-wholesaler visit prep
-  - after supplier list update
+- prep before stock purchase trip
+  - after restock planning update
   - end-of-day close
   - repayment deadline check
   - weekly trend review
@@ -88,13 +87,6 @@ Shopkeepers record operations on paper and in memory. Credit, sales, and cash st
   - one to three actionable next steps,
   - direct button path back to trigger other moments or quick helpers (`/cash`, `/debtors`, `/insight_*`).
 - These should be triggerable at any time from the Telegram quick keyboard board (moment buttons are always visible, not tied to automatic time-of-day checks).
-
-### M7: Supplier offer tracking and wholesaler prep list
-- Track offer history by supplier (agent vs wholesaler).
-- Generate a simple "next wholesaler trip" suggestion list:
-  - low stock items
-  - latest known supplier prices
-  - recommended purchase quantity to reach target stock
 
 ## Explicitly out of scope for MVP-lite
 - Full accounting stack and formal financial statements.
@@ -118,23 +110,10 @@ Shopkeepers record operations on paper and in memory. Credit, sales, and cash st
 3. User confirms or edits.
 4. Sales records are posted and linked to source photo.
 
-### Flow C: Supplier price update
-1. User sends supplier offer photo or text.
-2. System extracts SKU and offered prices.
-3. User confirms supplier, item, and unit price.
-4. Offer is saved to supplier history.
-
-### Flow D: Wholesaler prep
-1. User asks for restock plan.
-2. System returns shortlist by urgency and latest known prices.
-3. User can mark planned quantities.
-
 ## Data requirements (minimum)
 - Product catalog (SKU id, name, unit, reorder point).
-- Supplier registry (supplier id, type: `agent` or `wholesaler`).
 - Inventory events.
 - Sales records.
-- Supplier offers.
 - Customer registry.
 - Utang ledger pages and line items (with running balances).
 - Photo ingestion records with parsed output and confirmation status.
@@ -150,8 +129,7 @@ Shopkeepers record operations on paper and in memory. Credit, sales, and cash st
 ## MVP-lite acceptance criteria
 - A notebook page photo can produce a confirmed sales bundle.
 - A notebook page photo can produce confirmed sales records.
-- Supplier offer history is queryable by SKU and supplier.
-- Bot can produce a wholesaler prep list from current stock + offer history.
+- Bot can produce a restock plan from current stock and reorder targets.
 - Margin and price-consistency warnings are shown on new sales.
 - Irrecoverable credit amounts are reported and excluded from expected cash recovery.
 - Health trend is visible by day and week; “Did I make money this week?” should be answered from all available sources.

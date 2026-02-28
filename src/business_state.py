@@ -22,6 +22,53 @@ def _slugify(value: str, max_len: int = 80) -> str:
     return (base.strip("_") or "item")[:max_len]
 
 
+def _normalize_customer_key(value: str | None) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (value or "").strip().lower())
+
+
+def _is_unknown_customer_name(customer_name: str | None) -> bool:
+    normalized = str(customer_name or "").strip().lower()
+    return normalized in {"", "unknown"}
+
+
+def _ledger_entry_fingerprint(
+    customer_key: str,
+    row: Dict[str, Any],
+) -> str:
+    date = str(row.get("date", "")).strip()
+    entry_kind = str(row.get("entry_kind", "")).strip().lower()
+    amount = f'{_coerce_float(row.get("amount"), default=0.0):.2f}'
+    running_balance = row.get("running_balance")
+    if running_balance is None or str(running_balance).strip() == "":
+        running_balance_text = "na"
+    else:
+        running_balance_text = f"{_coerce_float(running_balance, default=0.0):.2f}"
+    note = re.sub(
+        r"\s+",
+        " ",
+        str(row.get("note", "")).strip().lower().replace("₱", ""),
+    )
+    return hashlib.sha1(
+        f"{customer_key}|{date}|{entry_kind}|{amount}|{running_balance_text}|{note}".encode(
+            "utf-8"
+        )
+    ).hexdigest()
+
+
+def _find_customer_keys_for_name(customers: Dict[str, Any], customer_name: str) -> List[str]:
+    requested_normalized = _normalize_customer_key(customer_name)
+    if not requested_normalized:
+        return []
+
+    matches: List[str] = []
+    for key, customer in customers.items():
+        if not isinstance(customer, dict):
+            continue
+        if _normalize_customer_key(str(customer.get("customer_name", ""))) == requested_normalized:
+            matches.append(key)
+    return matches
+
+
 def _coerce_float(value: Any, *, default: float = 0.0) -> float:
     if value is None:
         return default
@@ -100,11 +147,10 @@ class BusinessStateStore:
                 "latest_snapshot": None,
             },
             "loans": {},
-            "offers": [],
-            "catalog": {},
-            "sales": [],
-            "insights": [],
-            "ingestion_log": [],
+        "catalog": {},
+        "sales": [],
+        "insights": [],
+        "ingestion_log": [],
         }
 
     def _normalize_state(self, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -117,8 +163,6 @@ class BusinessStateStore:
             payload["inventory"] = {}
         if not isinstance(payload.get("loans"), dict):
             payload["loans"] = {}
-        if not isinstance(payload.get("offers"), list):
-            payload["offers"] = []
         if not isinstance(payload.get("catalog"), dict):
             payload["catalog"] = {}
         if not isinstance(payload.get("sales"), list):
@@ -160,9 +204,60 @@ class BusinessStateStore:
         source_id: str | None = None,
         draft_payload: Dict[str, Any] | None = None,
     ) -> Dict[str, Any]:
+        if _is_unknown_customer_name(customer_name):
+            return {
+                "customer_key": _slugify(customer_name),
+                "entries_added": 0,
+                "entries_total": 0,
+                "current_balance": 0.0,
+            }
+
         payload = self.load()
-        key = _slugify(customer_name)
         customers = payload["customers"]
+        requested_key = _slugify(customer_name)
+        matching_keys = _find_customer_keys_for_name(customers, customer_name)
+        if requested_key in customers and requested_key not in matching_keys:
+            matching_keys.append(requested_key)
+
+        if matching_keys:
+            primary_key = max(
+                matching_keys,
+                key=lambda key: str(
+                    customers.get(key, {}).get("last_updated_utc")
+                    or customers.get(key, {}).get("first_seen_utc")
+                    or ""
+                ),
+            )
+            key = primary_key
+            for merge_key in matching_keys:
+                if merge_key == primary_key:
+                    continue
+                merge_customer = customers.get(merge_key)
+                if not isinstance(merge_customer, dict):
+                    customers.pop(merge_key, None)
+                    continue
+                customers.pop(merge_key, None)
+                existing_entries_to_merge = merge_customer.get("entries")
+                if not isinstance(existing_entries_to_merge, list) or not existing_entries_to_merge:
+                    continue
+                pending = customers.setdefault(
+                    key,
+                    {
+                        "customer_key": key,
+                        "customer_name": customer_name or "Unknown",
+                        "entries": [],
+                        "current_balance": 0.0,
+                        "first_seen_utc": _now_utc(),
+                        "last_updated_utc": None,
+                        "is_irrecoverable": False,
+                    },
+                )
+                if not isinstance(pending.get("entries"), list):
+                    pending["entries"] = []
+                pending["entries"].extend(existing_entries_to_merge)
+        else:
+            key = requested_key
+
         customer = customers.setdefault(
             key,
             {
@@ -175,9 +270,43 @@ class BusinessStateStore:
                 "is_irrecoverable": False,
             },
         )
+        if requested_key != key and customer_name:
+            customer["customer_name"] = customer_name
+        if str(customer.get("customer_name", "")).strip().lower() in {"", "unknown"}:
+            customer["customer_name"] = customer_name
 
+        existing_entries = customer.get("entries")
+        if not isinstance(existing_entries, list):
+            existing_entries = []
+            customer["entries"] = existing_entries
+        if existing_entries:
+            deduped_entries: List[Dict[str, Any]] = []
+            deduped_signatures = set()
+            for existing_entry in existing_entries:
+                if not isinstance(existing_entry, dict):
+                    continue
+                fingerprint = _ledger_entry_fingerprint(key, existing_entry)
+                if fingerprint in deduped_signatures:
+                    continue
+                deduped_signatures.add(fingerprint)
+                deduped_entries.append(existing_entry)
+            if len(deduped_entries) != len(existing_entries):
+                customer["entries"] = deduped_entries
+                existing_entries = deduped_entries
+        existing_entries_balance = round(
+            sum(_coerce_float(entry.get("amount"), default=0.0) for entry in existing_entries if isinstance(entry, dict)),
+            2,
+        )
+        customer["current_balance"] = existing_entries_balance
+
+        existing_signatures = {
+            _ledger_entry_fingerprint(key, dict(existing_entry))
+            for existing_entry in existing_entries
+            if isinstance(existing_entry, dict)
+        }
         added = 0
-        running = _coerce_float(customer.get("current_balance"), default=0.0)
+        running = existing_entries_balance
+        added_balance_delta = 0.0
         for idx, row in enumerate(rows):
             if not isinstance(row, dict):
                 continue
@@ -186,16 +315,26 @@ class BusinessStateStore:
             if amount == 0.0 and payload_row.get("entry_kind") != "payment":
                 # keep zeros only if parser explicitly included them
                 continue
+
+            row_fingerprint = _ledger_entry_fingerprint(key, payload_row)
+            if row_fingerprint in existing_signatures:
+                continue
+
             running += amount
+            added_balance_delta += amount
             payload_row.setdefault("entry_id", self._next_id("customers", f"led-{key}-{idx}"))
             payload_row.setdefault("source", source)
             payload_row.setdefault("source_id", source_id)
             if payload_row.get("running_balance") is None:
                 payload_row["running_balance"] = round(running, 2)
             customer["entries"].append(payload_row)
+            existing_signatures.add(row_fingerprint)
             added += 1
 
-        customer["current_balance"] = round(_coerce_float(customer.get("current_balance"), default=0.0) + sum(_coerce_float(r.get("amount"), default=0.0) for r in customer["entries"][-added:]) , 2)
+        customer["current_balance"] = round(
+            _coerce_float(customer.get("current_balance"), default=0.0) + added_balance_delta,
+            2,
+        )
         customer["last_updated_utc"] = _now_utc()
         if customer["first_seen_utc"] is None:
             customer["first_seen_utc"] = _now_utc()
@@ -351,47 +490,6 @@ class BusinessStateStore:
         self.save(payload)
         return {"sku_id": key, "product": product, "event": event}
 
-    def add_offer(
-        self,
-        supplier_name: str,
-        sku_name: str,
-        unit_price: float,
-        *,
-        supplier_type: str = "agent",
-        unit: str = "pcs",
-        source: str = "manual",
-        source_id: str | None = None,
-        effective_date: str | None = None,
-    ) -> Dict[str, Any]:
-        payload = self.load()
-        sku_id = _slugify(sku_name)
-        offer = {
-            "offer_id": self._next_id("offers", f"offer-{sku_id}"),
-            "supplier_name": supplier_name or "Unknown",
-            "supplier_type": supplier_type,
-            "sku_id": sku_id,
-            "sku_name": sku_name,
-            "unit": unit,
-            "unit_price": round(_coerce_float(unit_price, default=0.0), 2),
-            "effective_date": _normalize_ts(effective_date),
-            "source": source,
-            "source_id": source_id,
-            "recorded_utc": _now_utc(),
-        }
-        payload["offers"].append(offer)
-        self._append_ingestion(
-            payload,
-            {
-                "kind": "offer_recorded",
-                "source": source,
-                "source_id": source_id,
-                "supplier_name": supplier_name,
-                "sku_id": sku_id,
-            },
-        )
-        self.save(payload)
-        return offer
-
     def add_sale_record(
         self,
         *,
@@ -453,6 +551,8 @@ class BusinessStateStore:
         for customer in payload.get("customers", {}).values():
             if not isinstance(customer, dict):
                 continue
+            if _is_unknown_customer_name(customer.get("customer_name")):
+                continue
             balance = _coerce_float(customer.get("current_balance"), default=0.0)
             if balance > min_amount:
                 debtors.append(
@@ -465,6 +565,73 @@ class BusinessStateStore:
                 )
         debtors.sort(key=lambda item: _coerce_float(item.get("current_balance"), default=0.0), reverse=True)
         return debtors
+
+    def purge_unknown_customers(self) -> Dict[str, Any]:
+        payload = self.load()
+        customers = payload.get("customers")
+        if not isinstance(customers, dict):
+            return {"removed_customers": 0, "removed_entries": 0}
+
+        removed_customers = 0
+        removed_entries = 0
+        for key in list(customers.keys()):
+            customer = customers.get(key)
+            if (
+                not isinstance(customer, dict)
+                or _is_unknown_customer_name(customer.get("customer_name"))
+                or key == _slugify("Unknown")
+            ):
+                if not isinstance(customer, dict):
+                    customers.pop(key, None)
+                    removed_customers += 1
+                    continue
+                removed_customers += 1
+                removed_entries += len(customer.get("entries", []) or [])
+                customers.pop(key, None)
+
+        if removed_customers:
+            self.save(payload)
+        return {"removed_customers": removed_customers, "removed_entries": removed_entries}
+
+    def purge_ledger_records(self) -> Dict[str, Any]:
+        payload = self.load()
+
+        customers = payload.get("customers")
+        if not isinstance(customers, dict):
+            customers = {}
+            payload["customers"] = customers
+
+        removed_customers = 0
+        removed_entries = 0
+        for key, customer in list(customers.items()):
+            if isinstance(customer, dict):
+                removed_entries += len(customer.get("entries", []) or [])
+            removed_customers += 1
+            customers.pop(key, None)
+
+        ingestion = payload.get("ingestion_log")
+        if isinstance(ingestion, list):
+            pre_len = len(ingestion)
+            filtered = [
+                item for item in ingestion
+                if not (
+                    isinstance(item, dict)
+                    and item.get("kind") == "ledger_posted"
+                )
+            ]
+            payload["ingestion_log"] = filtered
+            removed_events = pre_len - len(filtered)
+        else:
+            payload["ingestion_log"] = []
+            removed_events = 0
+
+        payload["customers"] = {}
+        self.save(payload)
+        return {
+            "removed_customers": removed_customers,
+            "removed_entries": removed_entries,
+            "removed_ingestion_events": removed_events,
+        }
 
     def get_cash_latest(self) -> Dict[str, Any] | None:
         payload = self.load()

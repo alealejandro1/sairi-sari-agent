@@ -10,6 +10,7 @@ This folder is the shared context for all implementation threads.
 5. `roadmap.md` - Delivery phases.
 6. `thread-charter.md` - How to split work across parallel Codex threads.
 7. `deployment-requirements.md` - local and cloud hardware for MVP-lite deployment.
+8. `telegram-board-dev.md` - launch command and auto-reload instructions for the Telegram board.
 
 ## Source of truth
 When requirements conflict, prioritize `product-requirements.md`.

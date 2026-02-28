@@ -8,16 +8,16 @@
 ## Phase 1 - Multimodal capture
 - Implement Telegram text/photo intake.
 - Add confirmation/edit flow for parsed drafts.
-- Support three photo intents: stock, notebook, supplier offer.
+- Support two photo intents: stock and notebook.
 
 ## Phase 2 - Core records and pricing checks
-- Persist products, suppliers, inventory events, sales records, and offers.
+- Persist products, inventory events, sales records, and alerts.
 - Add margin warning and price consistency warning.
 - Ensure append-only corrections and source traceability.
 
 ## Phase 3 - Wholesaler prep output
 - Add low-stock detection and purchase quantity suggestions.
-- Use latest supplier offer history in prep list output.
+- Use current stock and reorder targets in prep list output.
 - Validate utility with synthetic scenarios.
 
 ## Phase 4 - Pilot hardening

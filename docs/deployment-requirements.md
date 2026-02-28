@@ -7,7 +7,8 @@ This section estimates the smallest practical hardware and hosting setup for the
 - Runtime: Python 3.11 bot process.
 - Process model: one long-running process (`python3 src/main.py bot`) using Telegram polling by default.
 - Persistence: local JSON file at `data/business_state.json` (lightweight single-tenant state).
-- OCR: PaddleOCR for image parsing (`extract_text_from_image` in `src/ledger_ocr.py`).
+- OCR:
+  - Ledger photos: PaddleOCR via `src/ledger_ocr.py`.
 - Storage: filesystem persistence (no database server).
 
 ## Minimal local development machine
@@ -15,12 +16,10 @@ This section estimates the smallest practical hardware and hosting setup for the
 For local dev/testing:
 
 - CPU: dual-core laptop CPU (x86_64 or Apple Silicon).
-- RAM: 4 GB minimum; 8 GB recommended for OCR model load.
+- RAM: 4 GB minimum; 8 GB recommended for local PaddleOCR model load and warmup.
 - Disk: 10 GB free.
 - Internet: stable broadband for Telegram webhooks/OCR downloads.
 - OS: macOS, Linux, or Windows with Python 3.11+ and `pip`.
-
-If OCR is not installed, this still runs with fewer resources (mostly text parsing and JSON updates).
 
 ## Minimal production-style host (small shop use)
 
@@ -64,8 +63,10 @@ The cheapest options for this architecture are:
   - `logs/telegram_conversations.jsonl`
 
 - Keep secrets in environment variables (`TELEGRAM_BOT_TOKEN`, `BUSINESS_STATE_STORE_PATH`, `TELEGRAM_ALLOWED_CHAT_IDS`).
+- For local TLS interception/MITM cert setups, use `TELEGRAM_INSECURE_TLS=1` only for testing.
 - Prefer polling initially. Webhooks require public HTTPS and inbound handling if you later switch.
-- If PaddleOCR install is too heavy on cloud, the bot still works without image OCR if dependency is absent; ledger-photo parsing will fail with the “install OCR” message until dependency is added.
+- For local iteration, run `python3 scripts/run_telegram_board.py` to auto-restart on `src/` and `scripts/` code changes.
+- Ledger-photo parsing still depends on PaddleOCR and will fail with an install message until dependency is added.
 
 ## Capacity outlook (this version)
 
