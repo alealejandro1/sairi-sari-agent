@@ -8,6 +8,32 @@ venv/
 
 # Env
 .env
+.env.*
+!.env.example
+!.env.template
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+*.asc
+*.jwk
+
+# Generic secret/container files
+secrets.json
+secrets.toml
+credentials.json
+.azuredevops
+*.secret
+*.credentials
+*.token
+*.rsa
+*.pem.enc
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
 
 # Editor
 .vscode/
@@ -18,3 +44,4 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+logs/

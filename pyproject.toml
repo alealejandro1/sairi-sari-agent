@@ -9,7 +9,10 @@ description = "Agentic Telegram digital twin for sari-sari store accounting"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "Your Name" }]
-dependencies = []
+dependencies = [
+  "python-telegram-bot>=20.6",
+  "python-dotenv>=1.0",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
