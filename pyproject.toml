@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sairi-sari-agent"
+version = "0.1.0"
+description = "Agentic Telegram digital twin for sari-sari store accounting"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Your Name" }]
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
