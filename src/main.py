@@ -1015,6 +1015,35 @@ def _format_stock_draft(draft_id: str, sku: str, qty_delta: float, reason: str) 
     )
 
 
+def _build_ledger_payload(
+    draft_id: str,
+    *,
+    customer_name: str,
+    parsed: Dict,
+    ocr_text: str,
+    chat_id: int,
+) -> Dict[str, object]:
+    return {
+        "schema": "sairi_ledger_draft_v1",
+        "draft_id": draft_id,
+        "source": "telegram_photo_ledger",
+        "chat_id": chat_id,
+        "customer_name": customer_name or "Unknown",
+        "received_at_utc": datetime.now(timezone.utc).isoformat(),
+        "raw_ocr_text": ocr_text,
+        "warnings": list(parsed.get("warnings", [])),
+        "rows": list(parsed.get("entries", [])),
+    }
+
+
+def _json_snippet(payload: Dict[str, object], *, max_chars: int = 3000) -> str:
+    raw = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
+    if len(raw) <= max_chars:
+        return f"```json\n{raw}\n```"
+    head = raw[: max_chars - 12]
+    return f"```json\n{head}\n...\n```"
+
+
 def _parse_loan_text(text: str) -> Optional[Dict[str, object]]:
     tokens = text.strip().split()
     if len(tokens) < 2:
@@ -1381,6 +1410,13 @@ async def on_photo(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> No
         parsed = parse_ledger_ocr_text(ocr_text)
         entries = list(parsed.get("entries", []))
         customer_name = str(parsed.get("customer_name") or "Unknown")
+        ledger_payload = _build_ledger_payload(
+            draft_id,
+            customer_name=customer_name,
+            parsed=parsed,
+            ocr_text=ocr_text,
+            chat_id=update.effective_chat.id,
+        )
         _get_drafts(context)[draft_id] = {
             "chat_id": str(update.effective_chat.id),
             "source": "ledger",
@@ -1390,7 +1426,17 @@ async def on_photo(update: "Update", context: "ContextTypes.DEFAULT_TYPE") -> No
             "customer_name": customer_name,
             "parsed": parsed,
             "lines": entries,
+            "payload_json": ledger_payload,
         }
+        await _reply_with_log(
+            update,
+            (
+                "📄 Parsed ledger payload (JSON):\n"
+                f"{_json_snippet(ledger_payload)}\n"
+                "If this looks correct, press Confirm. If not, edit text or press Cancel."
+            ),
+            source="ledger_json_review",
+        )
         await _reply_with_log(
             update,
             format_ledger_draft(entries, draft_id=draft_id),
@@ -1483,6 +1529,7 @@ def _persist_ledger_draft(context: "ContextTypes.DEFAULT_TYPE", draft_id: str, d
         rows=entries,
         source="telegram_photo_ledger",
         source_id=draft_id,
+        draft_payload=draft.get("payload_json"),
     )
     draft["ledger_recorded"] = True
     draft["save_result"] = result
